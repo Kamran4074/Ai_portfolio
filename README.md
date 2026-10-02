@@ -23,7 +23,7 @@ of guessing.
 |---|---|
 | Frontend | React 19, Vite, Tailwind CSS 4, React Router |
 | Backend | Python 3.11, FastAPI, Uvicorn |
-| Retrieval | sentence-transformers, ChromaDB |
+| Retrieval | all-MiniLM-L6-v2 (ONNX), ChromaDB |
 | LLM | Google Gemini (`google-genai` SDK) |
 
 ## Project structure
@@ -137,13 +137,20 @@ Each run rebuilds the whole index, so it always matches the files on disk.
 - **Frontend:** Vercel (or any static host). Root directory `frontend`, build
   command `npm run build`, output directory `dist`. Set `VITE_API_BASE_URL` to
   the deployed backend URL.
-- **Backend:** a host that runs a long-lived Python process with enough memory
-  for PyTorch, such as Hugging Face Spaces (Docker) or Railway. Serverless
-  platforms like Vercel don't fit the backend's size or its in-memory rate
-  limiter. On the host:
-  - set `GEMINI_API_KEY`, `ENVIRONMENT=production` and `FRONTEND_ORIGIN=<your frontend URL>`
-  - run `python scripts/ingest_knowledge.py` before starting the server (the index isn't committed)
-  - start with `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- **Backend:** Render (free plan), built from `backend/Dockerfile`. The image
+  has no PyTorch (embeddings run on onnxruntime), builds the vector index at
+  build time and serves on port 7860, fitting in the free plan's 512 MB RAM.
+  In the Render dashboard: *New → Web Service*, connect this GitHub repo, then:
+  - root directory `backend`, language *Docker*, instance type *Free*
+  - environment variables: `PORT=7860`, `GEMINI_API_KEY`,
+    `ENVIRONMENT=production`, `FRONTEND_ORIGIN=<your frontend URL>`
+
+  Every push to `main` then rebuilds and redeploys the backend.
+- **Keep-alive (optional):** Render's free plan sleeps a service after 15
+  minutes without traffic, so the next request waits while it wakes.
+  `.github/workflows/keep-alive.yml` pings `/health` every 10 minutes once the
+  `BACKEND_URL` repository variable is set. GitHub can delay scheduled runs;
+  an external monitor such as UptimeRobot is more reliable.
 
 ## More detail
 

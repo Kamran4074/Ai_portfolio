@@ -14,8 +14,6 @@ from dotenv import load_dotenv
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BACKEND_DIR / ".env")
 
-EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
-
 CHROMA_PERSIST_DIR = BACKEND_DIR / "data" / "chroma"
 CHROMA_COLLECTION_NAME = "portfolio_knowledge"
 

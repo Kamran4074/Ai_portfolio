@@ -1,19 +1,19 @@
-# Pings the deployed backend so the free Hugging Face Space never goes to
-# sleep (it sleeps after 48h without traffic).
+# Pings the deployed backend so it stays warm. Render's free plan sleeps a
+# service after 15 minutes without traffic, so this runs every 10 minutes.
+# GitHub may delay scheduled runs; an external monitor (e.g. UptimeRobot)
+# hitting /health every 5 minutes is the more reliable option.
 #
 # Setup: GitHub repo -> Settings -> Secrets and variables -> Actions ->
 # Variables -> New repository variable:
-#   BACKEND_URL = https://<your-space>.hf.space   (no trailing slash)
+#   BACKEND_URL = https://<your-service>.onrender.com   (no trailing slash)
 # Until BACKEND_URL is set, the job is skipped instead of failing.
 
 name: Keep backend awake
 
 on:
   schedule:
-    # Every 12 hours (00:00 and 12:00 UTC). Cron can't express "every 23h";
-    # 12h keeps a wide margin under the 48h limit even if GitHub delays or
-    # skips a scheduled run, which it sometimes does.
-    - cron: "0 */12 * * *"
+    # Every 10 minutes.
+    - cron: "*/10 * * * *"
   workflow_dispatch: # lets you run it by hand from the Actions tab
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
     if: ${{ vars.BACKEND_URL != '' }}
     steps:
       - name: Ping /health
-        # A sleeping Space can take a minute or two to wake up, hence the
+        # A cold backend can take a minute or two to wake up, hence the
         # long timeout and retries.
         run: |
           curl --fail --silent --show-error \

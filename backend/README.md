@@ -258,13 +258,15 @@ incremental `upsert` later, re-running would still overwrite in place.
 
 ## Retrieval
 
-- **Embedding model**: `sentence-transformers/all-MiniLM-L6-v2`, running
-  fully locally via the `sentence-transformers` package — no API, no API
-  key, no network call at query time. Loaded once per process
+- **Embedding model**: `all-MiniLM-L6-v2`, running fully locally on
+  `onnxruntime` via chromadb's bundled `ONNXMiniLM_L6_V2` — no PyTorch, no
+  API, no API key, no network call at query time. Its vectors match the
+  `sentence-transformers` build of the same model (cosine similarity 1.0),
+  so the retrieval threshold below still applies. Loaded once per process
   (`functools.lru_cache`) and reused, not reloaded per request. Loaded
   eagerly at startup (FastAPI lifespan in `main.py`) so the first visitor
-  doesn't wait for it, and from the local HF cache only
-  (`local_files_only=True`) — it downloads only on a fresh machine.
+  doesn't wait for it, and from `~/.cache/chroma/onnx_models/` — it
+  downloads only on a fresh machine.
 - **Vector database**: ChromaDB, persisted locally at
   `backend/data/chroma/` (resolved relative to `backend/app/config.py`,
   not an absolute path — this keeps working if the project is moved to

@@ -1,0 +1,12 @@
+# Never bake secrets or local-only state into the image.
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+data/
+__pycache__/
+*.py[cod]
+*.log
+Dockerfile
+.dockerignore
