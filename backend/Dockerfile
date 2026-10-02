@@ -18,7 +18,10 @@ COPY --chown=user . .
 
 # Build the vector index (and download the embedding model) at image build
 # time, so a cold start only loads files from disk. Needs no API key.
-RUN python scripts/ingest_knowledge.py
+# The downloaded model archive is deleted in the same layer: chromadb only
+# reads the extracted files, so the ~80 MB .tar.gz is dead weight.
+RUN python scripts/ingest_knowledge.py \
+ && rm -f $HOME/.cache/chroma/onnx_models/all-MiniLM-L6-v2/onnx.tar.gz
 
 EXPOSE 7860
 
