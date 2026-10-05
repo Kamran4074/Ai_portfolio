@@ -1,0 +1,26 @@
+# Render Blueprint for the backend. Render -> New -> Blueprint -> pick this
+# repo. Secrets marked `sync: false` are asked for once during setup.
+services:
+  - type: web
+    name: ai-portfolio-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    # Only rebuild when the backend changes, not on frontend commits.
+    buildFilter:
+      paths:
+        - backend/**
+    envVars:
+      # The Dockerfile listens on 7860; tell Render to route there.
+      - key: PORT
+        value: "7860"
+      - key: ENVIRONMENT
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      # Your Vercel URL, e.g. https://ai-portfolio.vercel.app (no trailing
+      # slash). Comma-separate to allow more than one.
+      - key: FRONTEND_ORIGIN
+        sync: false
